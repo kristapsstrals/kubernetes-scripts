@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: strapi-volume
+  namespace: strapi
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/strapi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: strapi-volume
+  namespace: strapi
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: strapi-deployment
+  namespace: strapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strapi
+  template:
+    metadata:
+      labels:
+        app: strapi
+    spec:
+      containers:
+        - name: strapi
+          image: strapi/strapi
+          ports:
+            - containerPort: 1337
+          env:
+            - name: NODE_ENV
+              value: development
+            - name: DATABASE_CLIENT
+              value: mongo
+            - name: DATABASE_HOST
+              value: mongo-strapi-svc
+            - name: DATABASE_PORT
+              value: "27017"
+            - name: DATABASE_NAME
+              value: strapi
+            - name: DATABASE_USERNAME
+              value: strapi
+            - name: DATABASE_PASSWORD
+              value: strapi
+          volumeMounts:
+            - mountPath: /srv/app/
+              name: strapi-volume
+      volumes:
+        - name: strapi-volume
+          persistentVolumeClaim:
+            claimName: strapi-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strapi-svc
+  namespace: strapi
+spec:
+  type: ClusterIP
+  ports:
+    - port: 1337
+      targetPort: 1337
+      protocol: TCP
+  selector:
+    app: strapi

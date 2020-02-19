@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ghost-deployment
+  namespace: ghost
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ghost
+  template:
+    metadata:
+      labels:
+        app: ghost
+    spec:
+      containers:
+        - name: ghost
+          image: ghost
+          ports:
+            - containerPort: 2368
+          env:
+            - name: database__client
+              value: mysql
+            - name: database__connection__host
+              value: ghost-db-svc
+            - name: DATABASE_PORT
+              value: "3306"
+            - name: database__connection__database
+              value: ghost
+            - name: database__connection__user
+              value: root
+            - name: database__connection__password
+              value: example
+            - name: url
+              value: http://ghost.datahub.all
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ghost-svc
+  namespace: ghost
+spec:
+  type: ClusterIP
+  ports:
+    - port: 2368
+      targetPort: 2368
+      protocol: TCP
+  selector:
+    app: ghost

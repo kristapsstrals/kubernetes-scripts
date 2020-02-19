@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: strapi-ui
+  namespace: strapi
+spec:
+  rules:
+    - host: strapi.datahub.all
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: strapi-svc
+              servicePort: 1337

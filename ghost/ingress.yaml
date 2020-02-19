@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ghost-ui
+  namespace: ghost
+  annotations:
+    ingress.kubernetes.io/proxy-body-size: 500m
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+spec:
+  rules:
+    - host: ghost.datahub.all
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: ghost-svc
+              servicePort: 2368

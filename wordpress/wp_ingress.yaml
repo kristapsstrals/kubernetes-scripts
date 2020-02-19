@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: wordpress-ui
+  namespace: wordpress
+  annotations:
+    ingress.kubernetes.io/proxy-body-size: 500m
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+spec:
+  rules:
+    - host: wordpress.datahub.all
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: wordpress-svc
+              servicePort: 80
