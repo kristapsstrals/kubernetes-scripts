@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: directus-deployment
+  namespace: directus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: directus
+  template:
+    metadata:
+      labels:
+        app: directus
+    spec:
+      containers:
+        - name: directus
+          image: directus/directus:v8-apache
+          ports:
+            - containerPort: 80
+          env:
+            - name: DIRECTUS_APP_ENV
+              value: "production"
+            - name: DIRECTUS_AUTH_PUBLICKEY
+              value: "some random secret"
+            - name: DIRECTUS_AUTH_SECRETKEY
+              value: "another random secret"
+            - name: DIRECTUS_DATABASE_HOST
+              value: directus-db-svc
+            - name: DIRECTUS_DATABASE_PORT
+              value: "3306"
+            - name: DIRECTUS_DATABASE_NAME
+              value: "directus"
+            - name: DIRECTUS_DATABASE_USERNAME
+              value: "directus"
+            - name: DIRECTUS_DATABASE_PASSWORD
+              value: "directus"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: directus-svc
+  namespace: directus
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: directus

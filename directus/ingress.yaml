@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: strapi-ui
-  namespace: strapi
+  name: directus-ui
+  namespace: directus
   annotations:
     ingress.kubernetes.io/proxy-body-size: 500m
     nginx.ingress.kubernetes.io/proxy-body-size: 500m
 spec:
   rules:
-    - host: strapi.datahub.all
+    - host: directus.datahub.all
       http:
         paths:
           - path: /
             backend:
-              serviceName: strapi-svc
-              servicePort: 1337
+              serviceName: directus-svc
+              servicePort: 80

@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: directus-volume
+  namespace: directus
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/directus
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: directus-volume
+  namespace: directus
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: directus-db-deployment
+  namespace: directus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: directus-db
+  template:
+    metadata:
+      labels:
+        app: directus-db
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: directus
+            - name: MYSQL_DATABASE
+              value: directus
+            - name: MYSQL_USER
+              value: directus
+            - name: MYSQL_PASSWORD
+              value: directus
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: directus-volume
+      volumes:
+        - name: directus-volume
+          persistentVolumeClaim:
+            claimName: directus-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: directus-db-svc
+  namespace: directus
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+  selector:
+    app: directus-db
